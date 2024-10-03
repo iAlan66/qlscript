@@ -2,6 +2,9 @@ import requests
 import json
 import os
 import logging
+import io
+
+from notify import send
 
 """
 follow 青龙面板签到脚本
@@ -13,6 +16,25 @@ follow 青龙面板签到脚本
 cron: 0 0 10 * * ?
 new Env("Follow签到")
 '''
+
+# 创建 StringIO 对象
+log_stream = io.StringIO()
+
+# 配置 logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# 创建控制台 Handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(
+    logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+# 创建 StringIO Handler
+stream_handler = logging.StreamHandler(log_stream)
+
+# 将两个 Handler 添加到 logger
+logger.addHandler(console_handler)
+logger.addHandler(stream_handler)
 
 # 环境变量获取csrf和cookie
 CSRF = os.getenv("FOLLOW_CSRF")
@@ -36,12 +58,14 @@ def checkin(csrf, cookie):
     response_code = response.json().get("code")
     response_message = response.json().get("message")
     if response_code == 2000:
-        logging.info(response_message)
+        logger.info(response_message)
     else:
-        logging.error(response_message)
+        logger.error(response_message)
 
 if __name__ == '__main__':
     if CSRF is None or COOKIE is None:
-        logging.error("CSRF or COOKIE is None")
+        error_message = "CSRF or COOKIE is None"
+        logger.error(error_message)
+        send(error_message)
         raise Exception("CSRF or COOKIE is None")
     checkin(CSRF, COOKIE)
