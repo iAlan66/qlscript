@@ -36,6 +36,9 @@ stream_handler = logging.StreamHandler(log_stream)
 logger.addHandler(console_handler)
 logger.addHandler(stream_handler)
 
+# log title
+log_title = "Follow签到"
+
 # 环境变量获取csrf和cookie
 CSRF = os.getenv("FOLLOW_CSRF")
 COOKIE = os.getenv("FOLLOW_COOKIE")
@@ -66,6 +69,7 @@ if __name__ == '__main__':
     if CSRF is None or COOKIE is None:
         error_message = "CSRF or COOKIE is None"
         logger.error(error_message)
-        send(error_message)
+        send(log_title,error_message)
         raise Exception("CSRF or COOKIE is None")
     checkin(CSRF, COOKIE)
+    send(log_title, log_stream.getvalue())
